@@ -1,0 +1,1529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CLASHY AI - Multi-Tool Platform</title>
+    <style>
+        /* --- General Styles --- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: white;
+            overflow-x: hidden;
+            transition: background 0.3s ease;
+        }
+
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 25px;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+
+        .theme-toggle:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.05);
+        }
+
+        /* --- Header Section --- */
+        .main-header {
+            text-align: center;
+            padding: 40px 20px;
+            background: rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
+            margin-bottom: 30px;
+        }
+
+        .main-title {
+            font-size: clamp(2.5rem, 6vw, 4rem);
+            font-weight: 700;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1);
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: gradient 3s ease infinite;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            margin-bottom: 20px;
+        }
+
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* --- Tools Grid --- */
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .tool-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .tool-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: left 0.5s;
+        }
+
+        .tool-card:hover::before {
+            left: 100%;
+        }
+
+        .tool-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .tool-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        .tool-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #fff;
+        }
+
+        .tool-description {
+            opacity: 0.8;
+            line-height: 1.5;
+            margin-bottom: 15px;
+        }
+
+        .tool-features {
+            list-style: none;
+            opacity: 0.7;
+        }
+
+        .tool-features li {
+            padding: 3px 0;
+            font-size: 0.9rem;
+        }
+
+        .tool-features li::before {
+            content: "✓ ";
+            color: #4ecdc4;
+            font-weight: bold;
+        }
+
+        /* --- Modal Styles --- */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background: rgba(255, 255, 255, 0.95);
+            margin: 2% auto;
+            padding: 30px;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 90vh;
+            overflow-y: auto;
+            color: #333;
+            position: relative;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+        }
+
+        .close {
+            position: absolute;
+            right: 20px;
+            top: 15px;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            color: #666;
+            transition: color 0.3s ease;
+        }
+
+        .close:hover {
+            color: #000;
+        }
+
+        .modal-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #eee;
+        }
+
+        .modal-title {
+            font-size: 2rem;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .input-group input,
+        .input-group textarea,
+        .input-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s ease, background-color 0.3s ease;
+        }
+
+        .input-group input:focus,
+        .input-group textarea:focus,
+        .input-group select:focus {
+            outline: none;
+            border-color: #4ecdc4;
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #4ecdc4, #45b7d1);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin: 5px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+        }
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+
+        .output-area {
+            background: #f8f9fa;
+            border: 2px solid #eee;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            min-height: 100px;
+            white-space: pre-wrap; /* Preserve line breaks */
+            font-family: 'Courier New', monospace; /* For code/text readability */
+        }
+
+        /* --- Language Translator Specific Styles --- */
+        .language-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .language-btn {
+            padding: 8px 15px;
+            border: 2px solid #ddd;
+            background: white;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+        .language-btn.active {
+            background: #4ecdc4;
+            color: white;
+            border-color: #4ecdc4;
+        }
+
+        /* --- Voice Analyzer Specific Styles --- */
+        .recording-indicator {
+            display: none; /* Hidden by default */
+            align-items: center;
+            gap: 10px;
+            background: #ff6b6b;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            margin: 10px auto; /* Centered */
+            width: fit-content;
+        }
+
+        .recording-dot {
+            width: 10px;
+            height: 10px;
+            background: white;
+            border-radius: 50%;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        /* --- Progress Bar Styles --- */
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: #eee;
+            border-radius: 3px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4ecdc4, #45b7d1);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        /* --- Resume Builder Specific Styles --- */
+        .resume-preview {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            margin-top: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            color: #333;
+            min-height: 400px; /* Ensure it has a base height */
+        }
+
+        .resume-header {
+            text-align: center;
+            border-bottom: 2px solid #4ecdc4;
+            padding-bottom: 20px;
+            margin-bottom: 20px;
+        }
+
+        .resume-name {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .resume-contact {
+            color: #666;
+            font-size: 1.1rem;
+        }
+
+        .resume-section {
+            margin-bottom: 25px;
+        }
+
+        .resume-section h3 {
+            color: #4ecdc4;
+            font-size: 1.3rem;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 5px;
+        }
+
+        .resume-section ul {
+            list-style: disc; /* Bullet points for skills */
+            margin-left: 20px;
+            padding: 0;
+        }
+        .resume-section ul li {
+            margin-bottom: 5px;
+        }
+
+
+        /* --- File Upload Area (for Voice, Summarizer, Image Analyzer) --- */
+        .file-upload-area {
+            border: 2px dashed #ddd;
+            border-radius: 10px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+        }
+
+        .file-upload-area:hover {
+            border-color: #4ecdc4;
+            background: #f8f9fa;
+        }
+
+        .file-upload-area.dragover {
+            border-color: #4ecdc4;
+            background: #e8f5f5;
+        }
+
+        /* --- Text Summarizer Specific Styles --- */
+        .summary-options {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .summary-btn {
+            padding: 8px 15px;
+            border: 2px solid #ddd;
+            background: white;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+        .summary-btn.active {
+            background: #4ecdc4;
+            color: white;
+            border-color: #4ecdc4;
+        }
+
+        /* --- Dark Theme Styles --- */
+        .dark-theme {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        }
+
+        .dark-theme .modal-content {
+            background: rgba(44, 62, 80, 0.95);
+            color: white;
+        }
+
+        .dark-theme .input-group label {
+            color: #ccc;
+        }
+        .dark-theme .input-group input,
+        .dark-theme .input-group textarea,
+        .dark-theme .input-group select {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: #555;
+            color: white;
+        }
+        .dark-theme .input-group input::placeholder,
+        .dark-theme .input-group textarea::placeholder {
+            color: #bbb;
+        }
+
+        .dark-theme .output-area {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: #555;
+            color: white;
+        }
+
+        .dark-theme .language-btn,
+        .dark-theme .summary-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: #555;
+            color: white;
+        }
+        .dark-theme .language-btn.active,
+        .dark-theme .summary-btn.active {
+            background: #4ecdc4;
+            color: white;
+            border-color: #4ecdc4;
+        }
+
+        .dark-theme .file-upload-area {
+            border-color: #555;
+            background: rgba(255, 255, 255, 0.05);
+            color: #eee;
+        }
+        .dark-theme .file-upload-area p {
+             opacity: 0.9;
+        }
+
+        .dark-theme .resume-preview {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+        }
+        .dark-theme .resume-name {
+            color: #eee;
+        }
+        .dark-theme .resume-contact {
+            color: #ccc;
+        }
+        .dark-theme .resume-section h3 {
+            color: #4ecdc4;
+            border-bottom-color: #555;
+        }
+
+
+        /* --- Responsive Design --- */
+        @media (max-width: 768px) {
+            .tools-grid {
+                grid-template-columns: 1fr;
+                padding: 15px;
+            }
+
+            .modal-content {
+                width: 95%;
+                padding: 20px;
+                margin: 5% auto; /* Adjust margin for smaller screens */
+            }
+
+            .language-selector,
+            .summary-options {
+                justify-content: center;
+            }
+
+            .modal-content > div:first-child { /* Targets the flex container for resume builder inputs/preview */
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <button class="theme-toggle" onclick="toggleTheme()">🌓 Toggle Theme</button>
+
+    <div class="main-header">
+        <h1 class="main-title">CLASHY AI</h1>
+        <p class="subtitle">Advanced AI-Powered Multi-Tool Platform</p>
+        <p style="opacity: 0.8;">Choose a tool below to get started</p>
+    </div>
+
+    <div class="tools-grid">
+        <div class="tool-card" onclick="openModal('translator')">
+            <div class="tool-icon">🌍</div>
+            <h3 class="tool-title">Language Translator</h3>
+            <p class="tool-description">Translate text between multiple languages with voice support</p>
+            <ul class="tool-features">
+                <li>Multi-language support</li>
+                <li>Voice input & output</li>
+                <li>Cultural context tips</li>
+                <li>Language swap feature</li>
+            </ul>
+        </div>
+
+        <div class="tool-card" onclick="openModal('voice')">
+            <div class="tool-icon">🎤</div>
+            <h3 class="tool-title">Voice/Audio Analyzer</h3>
+            <p class="tool-description">Record and analyze audio with speech-to-text conversion</p>
+            <ul class="tool-features">
+                <li>Live recording</li>
+                <li>File upload support</li>
+                <li>Real-time transcription</li>
+                <li>Emotion analysis</li>
+            </ul>
+        </div>
+
+        <div class="tool-card" onclick="openModal('resume')">
+            <div class="tool-icon">📄</div>
+            <h3 class="tool-title">AI Resume Builder</h3>
+            <p class="tool-description">Create professional resumes with AI-powered content generation</p>
+            <ul class="tool-features">
+                <li>Smart templates</li>
+                <li>AI content generation</li>
+                <li>Skills optimization</li>
+                <li>Real-time preview</li>
+            </ul>
+        </div>
+
+        <div class="tool-card" onclick="openModal('summarizer')">
+            <div class="tool-icon">📝</div>
+            <h3 class="tool-title">Text Summarizer</h3>
+            <p class="tool-description">Summarize long texts and documents intelligently</p>
+            <ul class="tool-features">
+                <li>Multiple summary types</li>
+                <li>Document upload</li>
+                <li>Key points extraction</li>
+                <li>Visual highlighting</li>
+            </ul>
+        </div>
+
+        <div class="tool-card" onclick="openModal('image-analyzer')">
+            <div class="tool-icon">🖼️</div>
+            <h3 class="tool-title">Image Analyzer</h3>
+            <p class="tool-description">Upload an image and get a detailed description or summary.</p>
+            <ul class="tool-features">
+                <li>Image upload</li>
+                <li>Detailed visual description</li>
+                <li>Content summarization</li>
+                <li>Object recognition</li>
+            </ul>
+        </div>
+    </div>
+
+    <div id="translator" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('translator')">&times;</span>
+            <div class="modal-header">
+                <h2 class="modal-title">🌍 Language Translator</h2>
+            </div>
+
+            <div class="language-selector">
+                <button class="language-btn active" onclick="selectLanguage('en')">English</button>
+                <button class="language-btn" onclick="selectLanguage('es')">Spanish</button>
+                <button class="language-btn" onclick="selectLanguage('fr')">French</button>
+                <button class="language-btn" onclick="selectLanguage('de')">German</button>
+                <button class="language-btn" onclick="selectLanguage('it')">Italian</button>
+                <button class="language-btn" onclick="selectLanguage('ja')">Japanese</button>
+                <button class="language-btn" onclick="selectLanguage('ko')">Korean</button>
+                <button class="language-btn" onclick="selectLanguage('zh')">Chinese</button>
+                <button class="language-btn" onclick="selectLanguage('hi')">Hindi</button>
+                <button class="language-btn" onclick="selectLanguage('ar')">Arabic</button>
+            </div>
+
+            <div class="input-group">
+                <label>From: <span id="fromLang">English</span></label>
+                <textarea id="inputText" placeholder="Enter text to translate..." rows="4"></textarea>
+                <button class="btn" onclick="startVoiceInput()">🎤 Voice Input</button>
+            </div>
+
+            <div style="text-align: center; margin: 20px 0;">
+                <button class="btn" onclick="swapLanguages()">🔄 Swap Languages</button>
+                <button class="btn" onclick="translateText()">🌍 Translate</button>
+            </div>
+
+            <div class="input-group">
+                <label>To: <span id="toLang">Spanish</span></label>
+                <div class="output-area" id="translationOutput">Translation will appear here...</div>
+                <button class="btn" onclick="speakTranslation()">🔊 Speak Translation</button>
+            </div>
+
+            <div class="progress-bar">
+                <div class="progress-fill" id="translateProgress"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="voice" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('voice')">&times;</span>
+            <div class="modal-header">
+                <h2 class="modal-title">🎤 Voice/Audio Analyzer</h2>
+            </div>
+
+            <div class="recording-indicator" id="recordingIndicator">
+                <div class="recording-dot"></div>
+                <span>Recording...</span>
+            </div>
+
+            <div class="input-group">
+                <label>Audio Input</label>
+                <div class="file-upload-area" onclick="document.getElementById('audioFile').click()">
+                    <p>📁 Click to upload audio file</p>
+                    <p style="font-size: 0.9rem; opacity: 0.7;">Supported formats: MP3, WAV, OGG</p>
+                </div>
+                <input type="file" id="audioFile" accept="audio/*" style="display: none;" onchange="handleAudioFile(this)">
+            </div>
+
+            <div style="text-align: center; margin: 20px 0;">
+                <button class="btn" onclick="startRecording()">🎤 Start Recording</button>
+                <button class="btn btn-secondary" onclick="stopRecording()">⏹️ Stop Recording</button>
+                <button class="btn" onclick="analyzeAudio()">📊 Analyze Audio</button>
+            </div>
+
+            <div class="input-group">
+                <label>Transcription</label>
+                <div class="output-area" id="transcriptionOutput">Audio transcription will appear here...</div>
+            </div>
+
+            <div class="input-group">
+                <label>Emotion Analysis</label>
+                <div class="output-area" id="emotionOutput">Emotion analysis will appear here...</div>
+            </div>
+
+            <div class="progress-bar">
+                <div class="progress-fill" id="voiceProgress"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="resume" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('resume')">&times;</span>
+            <div class="modal-header">
+                <h2 class="modal-title">📄 AI Resume Builder</h2>
+            </div>
+
+            <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+                <div style="flex: 1; min-width: 300px;">
+                    <div class="input-group">
+                        <label>Full Name</label>
+                        <input type="text" id="resumeName" placeholder="Enter your full name" oninput="updateResume()">
+                    </div>
+
+                    <div class="input-group">
+                        <label>Email</label>
+                        <input type="email" id="resumeEmail" placeholder="your.email@example.com" oninput="updateResume()">
+                    </div>
+
+                    <div class="input-group">
+                        <label>Phone</label>
+                        <input type="tel" id="resumePhone" placeholder="+1 (555) 123-4567" oninput="updateResume()">
+                    </div>
+
+                    <div class="input-group">
+                        <label>Professional Summary</label>
+                        <textarea id="resumeSummary" placeholder="Brief professional summary..." rows="3" oninput="updateResume()"></textarea>
+                        <button class="btn" onclick="generateSummary()">✨ AI Generate</button>
+                    </div>
+
+                    <div class="input-group">
+                        <label>Skills (comma-separated)</label>
+                        <input type="text" id="resumeSkills" placeholder="JavaScript, Python, React..." oninput="updateResume()">
+                        <button class="btn" onclick="optimizeSkills()">🎯 Optimize Skills</button>
+                    </div>
+
+                    <div class="input-group">
+                        <label>Experience</label>
+                        <textarea id="resumeExperience" placeholder="Work experience..." rows="4" oninput="updateResume()"></textarea>
+                    </div>
+
+                    <div class="input-group">
+                        <label>Education</label>
+                        <textarea id="resumeEducation" placeholder="Education details..." rows="3" oninput="updateResume()"></textarea>
+                    </div>
+
+                    <div style="text-align: center; margin: 20px 0;">
+                        <button class="btn" onclick="downloadResume()">💾 Download Resume</button>
+                        <button class="btn btn-secondary" onclick="clearResume()">🗑️ Clear All</button>
+                    </div>
+                </div>
+
+                <div style="flex: 1; min-width: 300px;">
+                    <h3>Preview</h3>
+                    <div class="resume-preview" id="resumePreview">
+                        <div class="resume-header">
+                            <div class="resume-name">Your Name</div>
+                            <div class="resume-contact">Email • Phone</div>
+                        </div>
+                        <div class="resume-section">
+                            <h3>Professional Summary</h3>
+                            <p>Your professional summary will appear here...</p>
+                        </div>
+                        <div class="resume-section">
+                            <h3>Skills</h3>
+                            <p>Your skills will appear here...</p>
+                        </div>
+                        <div class="resume-section">
+                            <h3>Experience</h3>
+                            <p>Your experience will appear here...</p>
+                        </div>
+                        <div class="resume-section">
+                            <h3>Education</h3>
+                            <p>Your education will appear here...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="summarizer" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('summarizer')">&times;</span>
+            <div class="modal-header">
+                <h2 class="modal-title">📝 Text Summarizer</h2>
+            </div>
+
+            <div class="summary-options">
+                <button class="summary-btn active" onclick="selectSummaryType('brief')">Brief</button>
+                <button class="summary-btn" onclick="selectSummaryType('detailed')">Detailed</button>
+                <button class="summary-btn" onclick="selectSummaryType('bullets')">Bullet Points</button>
+                <button class="summary-btn" onclick="selectSummaryType('key')">Key Points</button>
+            </div>
+
+            <div class="file-upload-area" onclick="document.getElementById('textFile').click()">
+                <p>📁 Click to upload document</p>
+                <p style="font-size: 0.9rem; opacity: 0.7;">Supported formats: TXT, PDF, DOC, DOCX</p>
+            </div>
+            <input type="file" id="textFile" accept=".txt,.pdf,.doc,.docx" style="display: none;" onchange="handleTextFile(this)">
+
+            <div class="input-group">
+                <label>Text to Summarize</label>
+                <textarea id="summaryInput" placeholder="Paste your text here or upload a document..." rows="6"></textarea>
+            </div>
+
+            <div style="text-align: center; margin: 20px 0;">
+                <button class="btn" onclick="summarizeText()">📝 Summarize</button>
+                <button class="btn btn-secondary" onclick="clearSummary()">🗑️ Clear</button>
+            </div>
+
+            <div class="input-group">
+                <label>Summary (<span id="summaryType">Brief</span>)</label>
+                <div class="output-area" id="summaryOutput">Summary will appear here...</div>
+            </div>
+
+            <div class="input-group">
+                <label>Key Points</label>
+                <div class="output-area" id="keyPointsOutput">Key points will be highlighted here...</div>
+            </div>
+
+            <div class="progress-bar">
+                <div class="progress-fill" id="summaryProgress"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="image-analyzer" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('image-analyzer')">&times;</span>
+            <div class="modal-header">
+                <h2 class="modal-title">🖼️ Image Analyzer</h2>
+            </div>
+
+            <div class="file-upload-area" id="imageUploadArea">
+                <p>📸 Click or Drag & Drop an image here</p>
+                <p style="font-size: 0.9rem; opacity: 0.7;">Supported formats: JPG, PNG, GIF</p>
+                <input type="file" id="imageFile" accept="image/*" style="display: none;" onchange="handleImageFile(this)">
+            </div>
+            <div id="imagePreviewContainer" style="text-align: center; margin-bottom: 20px; display: none;">
+                <img id="imagePreview" src="#" alt="Image Preview" style="max-width: 100%; max-height: 300px; border-radius: 10px; border: 1px solid #ddd;">
+            </div>
+
+            <div style="text-align: center; margin: 20px 0;">
+                <button class="btn" onclick="analyzeImage()">🔍 Analyze Image</button>
+                <button class="btn btn-secondary" onclick="clearImageAnalyzer()">🗑️ Clear</button>
+            </div>
+
+            <div class="input-group">
+                <label>Image Description/Summary</label>
+                <div class="output-area" id="imageAnalysisOutput">Image analysis will appear here...</div>
+            </div>
+
+            <div class="progress-bar">
+                <div class="progress-fill" id="imageAnalysisProgress"></div>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        // --- Global Variables ---
+        const BACKEND_URL = 'http://localhost:3000'; // IMPORTANT: This must match the port your backend runs on!
+        let currentFromLang = 'en';
+        let currentToLang = 'es';
+        let currentSummaryType = 'brief';
+        let isRecording = false; // For Voice Analyzer (placeholder)
+        let mediaRecorder; // For Voice Analyzer (placeholder)
+        let audioChunks = []; // For Voice Analyzer (placeholder)
+        let recognition; // For Web Speech API SpeechRecognition
+        let selectedImageFile = null; // For Image Analyzer
+
+        // Language data for Translator (matching backend)
+        const languages = {
+            'en': { name: 'English', geminiCode: 'en' },
+            'es': { name: 'Spanish', geminiCode: 'es' },
+            'fr': { name: 'French', geminiCode: 'fr' },
+            'de': { name: 'German', geminiCode: 'de' },
+            'it': { name: 'Italian', geminiCode: 'it' },
+            'ja': { name: 'Japanese', geminiCode: 'ja' },
+            'ko': { name: 'Korean', geminiCode: 'ko' },
+            'zh': { name: 'Chinese', geminiCode: 'zh' }, // For Gemini, 'zh' is usually sufficient for Mandarin
+            'hi': { name: 'Hindi', geminiCode: 'hi' },
+            'ar': { name: 'Arabic', geminiCode: 'ar' }
+        };
+
+        // --- Core UI Functions ---
+
+        // Modal functions
+        function openModal(modalId) {
+            document.getElementById(modalId).style.display = 'block';
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+            // Stop any ongoing speech synthesis or recognition when closing modals
+            if (window.speechSynthesis) {
+                window.speechSynthesis.cancel();
+            }
+            if (recognition) {
+                recognition.stop();
+            }
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.style.display = 'none';
+                if (window.speechSynthesis) {
+                    window.speechSynthesis.cancel();
+                }
+                if (recognition) {
+                    recognition.stop();
+                }
+            }
+        }
+
+        // Theme toggle
+        function toggleTheme() {
+            document.body.classList.toggle('dark-theme');
+        }
+
+        // --- Language Translator Functions ---
+        function selectLanguage(langCode) {
+            const buttons = document.querySelectorAll('#translator .language-btn'); 
+            buttons.forEach(btn => btn.classList.remove('active'));
+
+            // This simple logic attempts to toggle 'from' and 'to' based on clicks
+            if (currentFromLang === langCode && currentToLang === langCode) {
+                currentToLang = (langCode === 'en' ? 'es' : 'en');
+            } else if (currentToLang === langCode) {
+                currentToLang = currentFromLang; // Set the current 'to' as 'from'
+                currentFromLang = langCode; // Make the new selection the 'from'
+            } else if (currentFromLang === langCode) {
+                currentFromLang = currentToLang; // Set the current 'from' as 'to'
+                currentToLang = langCode; // Make the new selection the 'to'
+            } else {
+                currentToLang = langCode; // Default to setting 'to' language
+            }
+
+            // Ensure 'from' button is active if it exists
+            const fromButton = Array.from(buttons).find(btn => languages[currentFromLang] && btn.textContent.trim() === languages[currentFromLang].name);
+            if (fromButton) fromButton.classList.add('active');
+
+            // Ensure 'to' button is active if it exists and is different from 'from'
+            const toButton = Array.from(buttons).find(btn => languages[currentToLang] && btn.textContent.trim() === languages[currentToLang].name);
+            if (toButton && fromButton !== toButton) toButton.classList.add('active');
+
+            document.getElementById('fromLang').textContent = languages[currentFromLang].name;
+            document.getElementById('toLang').textContent = languages[currentToLang].name;
+        }
+
+
+        function swapLanguages() {
+            const temp = currentFromLang;
+            currentFromLang = currentToLang;
+            currentToLang = temp;
+
+            document.getElementById('fromLang').textContent = languages[currentFromLang].name;
+            document.getElementById('toLang').textContent = languages[currentToLang].name;
+
+            // Swap text content in input/output areas if there's content
+            const inputText = document.getElementById('inputText').value;
+            const outputText = document.getElementById('translationOutput').textContent;
+
+            if (outputText && outputText !== 'Translation will appear here...' && !outputText.startsWith('Error:')) {
+                document.getElementById('inputText').value = outputText;
+                document.getElementById('translationOutput').textContent = inputText;
+            } else {
+                document.getElementById('inputText').value = '';
+                document.getElementById('translationOutput').textContent = 'Translation will appear here...';
+            }
+
+            // Update active state of language buttons
+            const buttons = document.querySelectorAll('#translator .language-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            const fromButton = Array.from(buttons).find(btn => btn.textContent.trim() === languages[currentFromLang].name);
+            const toButton = Array.from(buttons).find(btn => btn.textContent.trim() === languages[currentToLang].name);
+            if (fromButton) fromButton.classList.add('active');
+            if (toButton && fromButton !== toButton) toButton.classList.add('active');
+        }
+
+        async function translateText() {
+            const inputText = document.getElementById('inputText').value;
+            if (!inputText.trim()) {
+                alert('Please enter text to translate.');
+                return;
+            }
+
+            const translationOutput = document.getElementById('translationOutput');
+            const progress = document.getElementById('translateProgress');
+
+            translationOutput.textContent = 'Translating...';
+            progress.style.width = '0%';
+
+            try {
+                // Start progress animation
+                let width = 0;
+                const progressInterval = setInterval(() => {
+                    width += 10;
+                    if (width <= 90) { // Keep it under 100% until response
+                        progress.style.width = width + '%';
+                    }
+                }, 100);
+
+                const response = await fetch(`${BACKEND_URL}/api/translate`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        text: inputText,
+                        fromLang: languages[currentFromLang].name, // Send full language name
+                        toLang: languages[currentToLang].name // Send full language name
+                    }),
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || `HTTP error! Status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                translationOutput.textContent = data.translatedText;
+
+            } catch (error) {
+                console.error('Error during translation:', error);
+                translationOutput.textContent = `Error: ${error.message}`;
+            } finally {
+                clearInterval(progressInterval);
+                progress.style.width = '100%';
+                setTimeout(() => progress.style.width = '0%', 1000); // Reset progress after a short delay
+            }
+        }
+
+        function startVoiceInput() {
+            if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+                alert('Your browser does not support Web Speech API for voice input.');
+                return;
+            }
+
+            const inputTextarea = document.getElementById('inputText');
+            const recognitionLangCode = languages[currentFromLang].geminiCode; 
+
+            recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+            recognition.lang = recognitionLangCode;
+            recognition.interimResults = false;
+            recognition.maxAlternatives = 1;
+
+            recognition.onstart = function() {
+                inputTextarea.placeholder = 'Listening... Speak now.';
+                inputTextarea.value = '';
+                document.getElementById('recordingIndicator').style.display = 'flex';
+            };
+
+            recognition.onresult = function(event) {
+                const speechResult = event.results[0][0].transcript;
+                inputTextarea.value = speechResult;
+                inputTextarea.placeholder = 'Enter text to translate...';
+                document.getElementById('recordingIndicator').style.display = 'none';
+                translateText(); // Automatically translate after speech input
+            };
+
+            recognition.onerror = function(event) {
+                console.error('Speech recognition error:', event.error);
+                inputTextarea.placeholder = `Error listening: ${event.error}. Try again.`;
+                document.getElementById('recordingIndicator').style.display = 'none';
+            };
+
+            recognition.onend = function() {
+                console.log('Speech recognition ended.');
+                inputTextarea.placeholder = 'Enter text to translate...';
+                document.getElementById('recordingIndicator').style.display = 'none';
+            };
+
+            recognition.start();
+        }
+
+
+        function speakTranslation() {
+            const translationOutput = document.getElementById('translationOutput').textContent;
+            if (!translationOutput || translationOutput === 'Translation will appear here...' || translationOutput.startsWith('Error:')) {
+                alert('No valid translation available to speak.');
+                return;
+            }
+
+            if ('speechSynthesis' in window) {
+                const utterance = new SpeechSynthesisUtterance(translationOutput);
+                const synthesisLangCode = languages[currentToLang].geminiCode;
+                utterance.lang = synthesisLangCode;
+                window.speechSynthesis.speak(utterance);
+            } else {
+                alert('Your browser does not support text-to-speech.');
+            }
+        }
+
+
+        // --- Voice Analyzer Functions ---
+        // Note: Full audio recording and processing is complex.
+        // This section provides basic setup but the analysis itself will be a backend placeholder.
+
+        function startRecording() {
+            alert('Recording functionality not fully implemented here (requires MediaRecorder API and backend processing).');
+            document.getElementById('recordingIndicator').style.display = 'flex';
+            // To implement fully:
+            // navigator.mediaDevices.getUserMedia({ audio: true })
+            //     .then(stream => {
+            //         mediaRecorder = new MediaRecorder(stream);
+            //         mediaRecorder.ondataavailable = event => audioChunks.push(event.data);
+            //         mediaRecorder.onstop = () => {
+            //             const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+            //             audioChunks = [];
+            //             // Send audioBlob to backend for analysis (e.g., convert to base64)
+            //             // const reader = new FileReader();
+            //             // reader.readAsDataURL(audioBlob);
+            //             // reader.onloadend = () => analyzeAudio(reader.result.split(',')[1]);
+            //         };
+            //         mediaRecorder.start();
+            //         isRecording = true;
+            //     })
+            //     .catch(err => console.error('Error accessing microphone:', err));
+        }
+
+        function stopRecording() {
+            alert('Stopping recording... (Backend placeholder for analysis)');
+            document.getElementById('recordingIndicator').style.display = 'none';
+            // if (isRecording && mediaRecorder) {
+            //     mediaRecorder.stop();
+            //     isRecording = false;
+            // }
+        }
+
+        function handleAudioFile(input) {
+            if (input.files.length > 0) {
+                const file = input.files[0];
+                const reader = new FileReader();
+                reader.onloadend = async () => {
+                    // Remove the "data:audio/webm;base64," prefix
+                    const base64Audio = reader.result.split(',')[1];
+                    await analyzeAudio(base64Audio); // Send to backend
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        async function analyzeAudio(base64Audio = '') {
+            const transcriptionOutput = document.getElementById('transcriptionOutput');
+            const emotionOutput = document.getElementById('emotionOutput');
+            const progress = document.getElementById('voiceProgress');
+
+            transcriptionOutput.textContent = 'Analyzing audio...';
+            emotionOutput.textContent = '';
+            progress.style.width = '0%';
+
+            try {
+                let width = 0;
+                const progressInterval = setInterval(() => {
+                    width += 10;
+                    if (width <= 90) {
+                        progress.style.width = width + '%';
+                    }
+                }, 100);
+
+                // Even if it's a placeholder on the backend, we send data to it.
+                const response = await fetch(`${BACKEND_URL}/api/analyze-audio`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ audioData: base64Audio }),
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || `HTTP error! Status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                transcriptionOutput.textContent = data.transcription;
+                emotionOutput.textContent = data.emotion;
+
+            } catch (error) {
+                console.error('Error during audio analysis:', error);
+                transcriptionOutput.textContent = `Error: ${error.message}`;
+                emotionOutput.textContent = '';
+            } finally {
+                clearInterval(progressInterval);
+                progress.style.width = '100%';
+                setTimeout(() => progress.style.width = '0%', 1000);
+            }
+        }
+
+        // --- Resume Builder Functions ---
+        function updateResume() {
+            const name = document.getElementById('resumeName').value;
+            const email = document.getElementById('resumeEmail').value;
+            const phone = document.getElementById('resumePhone').value;
+            const summary = document.getElementById('resumeSummary').value;
+            const skills = document.getElementById('resumeSkills').value;
+            const experience = document.getElementById('resumeExperience').value;
+            const education = document.getElementById('resumeEducation').value;
+
+            document.querySelector('#resumePreview .resume-name').textContent = name || 'Your Name';
+            document.querySelector('#resumePreview .resume-contact').textContent = `${email || 'Email'} • ${phone || 'Phone'}`;
+
+            const summaryParagraph = document.querySelector('#resumePreview .resume-section:nth-of-type(1) p');
+            summaryParagraph.textContent = summary || 'Your professional summary will appear here...';
+
+            const skillsParagraph = document.querySelector('#resumePreview .resume-section:nth-of-type(2) p');
+            skillsParagraph.innerHTML = skills.split(',').map(skill => skill.trim()).filter(s => s).length > 0 ?
+                                        '<ul>' + skills.split(',').map(skill => `<li>${skill.trim()}</li>`).join('') + '</ul>' :
+                                        'Your skills will appear here...';
+
+            const experienceParagraph = document.querySelector('#resumePreview .resume-section:nth-of-type(3) p');
+            experienceParagraph.innerHTML = experience.replace(/\n/g, '<br>') || 'Your experience will appear here...';
+
+            const educationParagraph = document.querySelector('#resumePreview .resume-section:nth-of-type(4) p');
+            educationParagraph.innerHTML = education.replace(/\n/g, '<br>') || 'Your education will appear here...';
+        }
+
+        async function generateSummary() {
+            const existingSummary = document.getElementById('resumeSummary').value;
+            const name = document.getElementById('resumeName').value; 
+            const role = 'software engineer'; // Example: You could add an input for this
+            const experienceLevel = 'mid-level'; // Example: You could add an input for this
+
+            if (!existingSummary.trim() && !name.trim()) {
+                alert('Please enter some existing summary text or your name for AI to generate.');
+                return;
+            }
+
+            const summaryField = document.getElementById('resumeSummary');
+            const originalSummaryText = summaryField.value;
+            summaryField.value = 'AI Generating summary...';
+
+            try {
+                const response = await fetch(`${BACKEND_URL}/api/resume/generate-summary`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ existingSummary, role, experienceLevel })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || `HTTP error! Status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                summaryField.value = data.generatedSummary;
+                updateResume(); // Update preview
+
+            } catch (error) {
+                console.error('Error generating resume summary:', error);
+                summaryField.value = originalSummaryText || `Error generating summary: ${error.message}`;
+            }
+        }
+
+        async function optimizeSkills() {
+            const currentSkills = document.getElementById('resumeSkills').value;
+            if (!currentSkills.trim()) {
+                alert('Please enter some skills to optimize.');
+                return;
+            }
+
+            const skillsField = document.getElementById('resumeSkills');
+            const originalSkillsText = skillsField.value;
+            skillsField.value = 'AI Optimizing skills...';
+
+            const jobDescriptionKeywords = 'JavaScript, React, Node.js, AWS, Agile, problem-solving, teamwork'; // Example
+
+            try {
+                const response = await fetch(`${BACKEND_URL}/api/resume/optimize-skills`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ currentSkills, jobDescriptionKeywords })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || `HTTP error! Status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                skillsField.value = data.optimizedSkills;
+                updateResume(); // Update preview
+
+            } catch (error) {
+                console.error('Error optimizing skills:', error);
+                skillsField.value = originalSkillsText || `Error optimizing skills: ${error.message}`;
+            }
+        }
+
+        function downloadResume() {
+            const resumeContent = document.getElementById('resumePreview').innerText;
+            const blob = new Blob([resumeContent], { type: 'text/plain;charset=utf-8' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'my_resume.txt';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(a.href);
+            alert('Resume content downloaded as my_resume.txt.');
+        }
+
+        function clearResume() {
+            document.getElementById('resumeName').value = '';
+            document.getElementById('resumeEmail').value = '';
+            document.getElementById('resumePhone').value = '';
+            document.getElementById('resumeSummary').value = '';
+            document.getElementById('resumeSkills').value = '';
+            document.getElementById('resumeExperience').value = '';
+            document.getElementById('resumeEducation').value = '';
+            updateResume(); // Clear preview as well
+            alert('Resume fields cleared.');
+        }
+
+
+        // --- Text Summarizer Functions ---
+        function selectSummaryType(type) {
+            currentSummaryType = type;
+            const buttons = document.querySelectorAll('#summarizer .summary-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            const clickedButton = Array.from(buttons).find(btn => btn.textContent.toLowerCase().includes(type));
+            if (clickedButton) {
+                clickedButton.classList.add('active');
+            }
+            document.getElementById('summaryType').textContent = type.charAt(0).toUpperCase() + type.slice(1);
+        }
+
+        function handleTextFile(input) {
+            if (input.files.length > 0) {
+                const file = input.files[0];
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('summaryInput').value = e.target.result;
+                };
+                reader.onerror = function(e) {
+                    alert('Error reading file.');
+                    console.error(e);
+                };
+                if (file.type === 'text/plain') {
+                    reader.readAsText(file);
+                } else {
+                    alert(`Selected file: ${file.name}. For PDF/DOCX, the backend would need additional libraries to extract text first. Only TXT supported directly by frontend.`);
+                }
+            }
+        }
+
+        async function summarizeText() {
+            const text = document.getElementById('summaryInput').value;
+            if (!text.trim()) {
+                alert('Please enter text or upload a document to summarize.');
+                return;
+            }
+            const progress = document.getElementById('summaryProgress');
+            const output = document.getElementById('summaryOutput');
+            const keyPointsOutput = document.getElementById('keyPointsOutput');
+
+            output.textContent = 'Summarizing...';
+            keyPointsOutput.textContent = '';
+            progress.style.width = '0%';
+
+            try {
+                let width = 0;
+                const progressInterval = setInterval(() => {
+                    width += 10;
+                    if (width <= 90) {
+                        progress.style.width = width + '%';
+                    }
+                }, 100);
+
+                const response = await fetch(`${BACKEND_URL}/api/summarize`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text, summaryType: currentSummaryType })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || `HTTP error! Status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                output.textContent = data.summary;
+                keyPointsOutput.textContent = data.keyPoints;
+
+            } catch (error) {
+                console.error('Error during summarization:', error);
+                output.textContent = `Error: ${error.message}`;
+                keyPointsOutput.textContent = '';
+            } finally {
+                clearInterval(progressInterval);
+                progress.style.width = '100%';
+                setTimeout(() => progress.style.width = '0%', 1000);
+            }
+        }
+
+        function clearSummary() {
+            document.getElementById('summaryInput').value = '';
+            document.getElementById('summaryOutput').textContent = 'Summary will appear here...';
+            document.getElementById('keyPointsOutput').textContent = 'Key points will be highlighted here...';
+            document.getElementById('summaryProgress').style.width = '0%';
+            alert('Summarizer fields cleared.');
+        }
+
+        // --- Image Analyzer Functions ---
+        document.getElementById('imageUploadArea').addEventListener('dragover', (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            event.target.classList.add('dragover');
+        });
+
+        document.getElementById('imageUploadArea').addEventListener('dragleave', (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            event.target.classList.remove('dragover');
+        });
+
+        document.getElementById('imageUploadArea').addEventListener('drop', (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            event.target.classList.remove('dragover');
+            const files = event.dataTransfer.files;
+            if (files.length > 0) {
+                handleImageFile({ files: files });
+            }
+        });
+
+        function handleImageFile(input) {
+            if (input.files && input.files[0]) {
+                selectedImageFile = input.files[0];
+                const reader = new FileReader();
+
+                reader.onload = function(e) {
+                    document.getElementById('imagePreview').src = e.target.result;
+                    document.getElementById('imagePreviewContainer').style.display = 'block';
+                    document.getElementById('imageAnalysisOutput').textContent = 'Ready to analyze...';
+                };
+
+                reader.readAsDataURL(selectedImageFile);
+            }
+        }
+
+        async function analyzeImage() {
+            if (!selectedImageFile) {
+                alert('Please select an image file first.');
+                return;
+            }
+
+            const outputArea = document.getElementById('imageAnalysisOutput');
+            const progress = document.getElementById('imageAnalysisProgress');
+
+            outputArea.textContent = 'Analyzing image...';
+            progress.style.width = '0%';
+
+            try {
+                let width = 0;
+                const progressInterval = setInterval(() => {
+                    width += 10;
+                    if (width <= 90) {
+                        progress.style.width = width + '%';
+                    }
+                }, 100);
+
+                // Convert image to Base64 string
+                const reader = new FileReader();
+                reader.readAsDataURL(selectedImageFile);
+                reader.onloadend = async () => {
+                    const base64Image = reader.result.split(',')[1]; // Remove "data:image/jpeg;base64," prefix
+
+                    const response = await fetch(`${BACKEND_URL}/api/analyze-image`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ imageData: base64Image })
+                    });
+
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.error || `HTTP error! Status: ${response.status}`);
+                    }
+
+                    const data = await response.json();
+                    outputArea.textContent = data.description;
+                };
+
+            } catch (error) {
+                console.error('Error during image analysis:', error);
+                outputArea.textContent = `Error: ${error.message}`;
+            } finally {
+                clearInterval(progressInterval);
+                progress.style.width = '100%';
+                setTimeout(() => progress.style.width = '0%', 1000);
+            }
+        }
+
+        function clearImageAnalyzer() {
+            selectedImageFile = null;
+            document.getElementById('imageFile').value = '';
+            document.getElementById('imagePreview').src = '#';
+            document.getElementById('imagePreviewContainer').style.display = 'none';
+            document.getElementById('imageAnalysisOutput').textContent = 'Image analysis will appear here...';
+            document.getElementById('imageAnalysisProgress').style.width = '0%';
+            alert('Image Analyzer fields cleared.');
+        }
+
+        // --- Initialization ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // Set initial language display for translator
+            document.getElementById('fromLang').textContent = languages[currentFromLang].name;
+            document.getElementById('toLang').textContent = languages[currentToLang].name;
+
+            // Set active class for initial language buttons
+            const translatorButtons = document.querySelectorAll('#translator .language-btn');
+            translatorButtons.forEach(btn => {
+                if (btn.textContent.trim() === languages[currentFromLang].name || btn.textContent.trim() === languages[currentToLang].name) {
+                    btn.classList.add('active');
+                }
+            });
+
+            // Set active class for initial summarizer type button
+            const summarizerButtons = document.querySelectorAll('#summarizer .summary-btn');
+            summarizerButtons.forEach(btn => {
+                if (btn.textContent.toLowerCase() === currentSummaryType) {
+                    btn.classList.add('active');
+                }
+            });
+
+            // Call updateResume once to set initial preview text
+            updateResume();
+        });
+
+    </script>
+</body>
+</html>
